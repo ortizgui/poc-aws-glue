@@ -6,6 +6,11 @@ set -e
 
 echo "=== Teste Local da POC ===="
 
+# Ir para o diretório raiz do projeto se necessário
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT"
+
 # Verificar se o Python está instalado
 if ! command -v python3 &> /dev/null; then
     echo "❌ Python3 não está instalado"
@@ -31,7 +36,7 @@ echo "✅ Pré-requisitos verificados"
 
 # Executar script principal em modo local
 echo "🔄 Executando script do Glue em modo local..."
-python src/glue_job.py local
+python3 src/glue_job.py local
 
 echo ""
 echo "✅ Teste local concluído!"

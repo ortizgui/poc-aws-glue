@@ -184,19 +184,41 @@ variable "max_capacity" {
 
 O script `src/glue_job.py` suporta execução em ambos os ambientes usando um único arquivo:
 
+**Arquitetura do Script:**
+
+O script `glue_job.py` foi projetado com uma arquitetura que garante **idêntica lógica de processamento** em ambos os ambientes:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    AMBIENTE LOCAL                           │
+├─────────────────────────────────────────────────────────────┤
+│ load_data_local() → process_data() → save_data_local()      │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                    AMBIENTE AWS GLUE                        │ 
+├─────────────────────────────────────────────────────────────┤
+│ load_data_glue() → process_data() → save_data_glue()        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- **`process_data()`**: Contém 100% da lógica de negócio usando pandas
+- **Input/Output**: Apenas estas funções diferem entre ambientes
+- **Garantia**: Mesmas regras executadas independente do ambiente
+
 **Execução Local:**
 ```bash
 # Usando parâmetro
 python3 src/glue_job.py local
 
-# Usando variável de ambiente
+# Usando variável de ambiente  
 ENVIRONMENT=local python3 src/glue_job.py
 ```
 
 **Execução no AWS Glue:**
-- O script detecta automaticamente quando está sendo executado no AWS Glue
-- Usa as bibliotecas do Glue (pyspark, awsglue) quando disponíveis
-- Se as bibliotecas não estiverem disponíveis, sugere execução em modo local
+- Detecta automaticamente o ambiente AWS Glue
+- Converte Spark DataFrames para pandas para usar a mesma lógica
+- Reconverte para Spark apenas no momento de salvar
 
 ## 📝 Logs e Monitoramento
 

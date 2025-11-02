@@ -6,6 +6,11 @@ set -e
 
 echo "=== Configuração do Ambiente de Desenvolvimento ===="
 
+# Ir para o diretório raiz do projeto se necessário
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT"
+
 # Verificar se o Python está instalado
 if ! command -v python3 &> /dev/null; then
     echo "❌ Python3 não está instalado"
@@ -47,7 +52,7 @@ echo "2. Para executar teste local:"
 echo "   ./scripts/test-local.sh"
 echo ""
 echo "3. Para executar diretamente:"
-echo "   python src/glue_job.py local"
+echo "   python3 src/glue_job.py local"
 echo ""
 echo "4. Para desativar o ambiente virtual:"
 echo "   deactivate"
