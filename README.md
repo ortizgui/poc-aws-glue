@@ -60,6 +60,25 @@ poc-glue-tests/
 ### Colunas Comuns para Join
 - `id` e `categoria`
 
+## ⚡ Resumo Rápido
+
+```bash
+# 1. Setup inicial
+./scripts/setup-dev.sh
+
+# 2. Teste local
+./scripts/test-local.sh
+
+# 3. Deploy na AWS
+./scripts/deploy.sh
+
+# 4. Executar no AWS Glue
+./scripts/run-glue-job.sh
+
+# 5. Limpar recursos (quando terminar)
+./scripts/destroy.sh
+```
+
 ## 🚀 Como Usar
 
 ### Pré-requisitos
@@ -67,6 +86,7 @@ poc-glue-tests/
 1. **AWS CLI configurado**:
    ```bash
    aws configure
+   # Configure: Access Key, Secret Key, Region (recomendado: us-east-1), Output format
    ```
 
 2. **Terraform instalado**:
@@ -74,18 +94,23 @@ poc-glue-tests/
    # macOS
    brew install terraform
    
+   # Ubuntu/Debian
+   sudo apt-get update && sudo apt-get install -y terraform
+   
    # Ou baixe de: https://terraform.io/downloads
    ```
 
 3. **Python 3** (para testes locais) - Será configurado automaticamente com venv
 
-### 0. Configurar Ambiente de Desenvolvimento (primeira vez)
+### 🔧 Fluxo Completo de Uso
+
+#### **Passo 0: Configurar Ambiente de Desenvolvimento (primeira vez)**
 
 ```bash
 ./scripts/setup-dev.sh
 ```
 
-### 1. Teste Local
+#### **Passo 1: Teste Local**
 
 Execute o processamento localmente para validar a lógica usando o mesmo script do Glue:
 
@@ -106,41 +131,61 @@ deactivate
 
 O resultado será salvo em `output/vendas_clientes_merged.csv`.
 
-### 2. Deploy na AWS
+#### **Passo 2: Deploy na AWS**
 
+#### **Primeira vez ou mudanças na infraestrutura:**
 ```bash
 ./scripts/deploy.sh
 ```
 
 Este comando irá:
-- Criar bucket S3 único
-- Fazer upload dos scripts e arquivos CSV
-- Criar job AWS Glue com configuração otimizada para baixo custo
-- Criar roles e políticas IAM necessárias
+- ✅ Verificar pré-requisitos (Terraform, AWS CLI)
+- ✅ Inicializar Terraform
+- ✅ Criar bucket S3 único
+- ✅ Fazer upload do script Python atualizado
+- ✅ Fazer upload dos arquivos CSV de exemplo
+- ✅ Criar job AWS Glue com configuração otimizada para baixo custo
+- ✅ Criar roles e políticas IAM necessárias
+- ✅ Exibir informações do deployment
 
-### 3. Executar Job AWS Glue
+#### **Atualizar apenas o script Python:**
+```bash
+cd terraform
+terraform apply -auto-approve
+```
+
+#### **Passo 3: Executar Job AWS Glue**
 
 ```bash
 ./scripts/run-glue-job.sh
 ```
 
 Este script irá:
-- Iniciar o job no AWS Glue
-- Monitorar a execução
-- Informar quando concluído
+- 🚀 Iniciar o job no AWS Glue
+- 📊 Monitorar a execução em tempo real
+- ✅ Informar quando concluído
+- 📁 Mostrar onde encontrar os resultados
 
-### 4. Baixar Resultados
+#### **Passo 4: Baixar Resultados (Opcional)**
 
 ```bash
-# Obter nome do bucket
+# Obter nome do bucket e baixar resultados
 cd terraform
 BUCKET_NAME=$(terraform output -raw s3_bucket_name)
-
-# Baixar resultados
 aws s3 cp s3://$BUCKET_NAME/output/ ./output/ --recursive
 ```
 
-### 5. Destruir Infraestrutura
+#### **Passo 5: Verificar Configuração AWS (Se Necessário)**
+
+```bash
+# Verificar se AWS CLI está configurado
+aws sts get-caller-identity
+
+# Se não estiver configurado:
+aws configure
+```
+
+#### **Passo 6: Destruir Infraestrutura (Quando Finalizar)**
 
 ```bash
 ./scripts/destroy.sh
