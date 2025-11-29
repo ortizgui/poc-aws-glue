@@ -69,6 +69,13 @@ header h1 {
     border-bottom: 2px solid var(--border-color);
 }
 
+.section-description {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
 .form-group {
     margin-bottom: 25px;
 }

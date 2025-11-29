@@ -140,6 +140,40 @@
                         </div>
                     </div>
 
+                    <div class="form-section">
+                        <h2>📅 Frequência de Execução (Opcional)</h2>
+                        <p class="section-description">Informe a frequência de execução para calcular custos semanais e mensais</p>
+                        
+                        <div class="form-group">
+                            <label for="executionFrequency">
+                                Frequência
+                                <span class="tooltip" data-tooltip="Selecione com que frequência o job será executado">ℹ️</span>
+                            </label>
+                            <select id="executionFrequency" name="executionFrequency">
+                                <option value="single">Execução única (apenas custo por execução)</option>
+                                <option value="daily">Diária</option>
+                                <option value="weekly">Semanal</option>
+                                <option value="monthly">Mensal</option>
+                                <option value="custom">Personalizada</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="executionsPerPeriodGroup" style="display: none;">
+                            <label for="executionsPerPeriod">
+                                Execuções por período
+                                <span class="tooltip" data-tooltip="Quantas vezes o job será executado no período selecionado">ℹ️</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="executionsPerPeriod" 
+                                name="executionsPerPeriod" 
+                                min="1" 
+                                value="1"
+                            >
+                            <span id="periodLabel" style="margin-left: 10px; color: var(--text-light);"></span>
+                        </div>
+                    </div>
+
                     <button type="submit" class="calculate-btn">Calcular Custo</button>
                 </form>
 
@@ -172,9 +206,25 @@
 
                     <div class="result-card total-card">
                         <div class="result-item">
-                            <span class="result-label total-label">Custo Total Estimado:</span>
+                            <span class="result-label total-label">Custo Total por Execução:</span>
                             <span class="result-value total-value" id="totalCost">$0.00</span>
                         </div>
+                    </div>
+
+                    <div class="result-card" id="weeklyCard" style="display: none;">
+                        <div class="result-item">
+                            <span class="result-label">Custo Semanal:</span>
+                            <span class="result-value" id="weeklyCost">$0.00</span>
+                        </div>
+                        <div class="result-details" id="weeklyDetails"></div>
+                    </div>
+
+                    <div class="result-card" id="monthlyCard" style="display: none;">
+                        <div class="result-item">
+                            <span class="result-label">Custo Mensal:</span>
+                            <span class="result-value" id="monthlyCost">$0.00</span>
+                        </div>
+                        <div class="result-details" id="monthlyDetails"></div>
                     </div>
 
                     <div class="result-card info-card">

@@ -181,6 +181,58 @@ function calculateDataCatalogCost(objectsInMillions) {
     };
 }
 
+// Função para calcular custos periódicos
+function calculatePeriodicCosts(singleExecutionCost, frequency, executionsPerPeriod) {
+    let weeklyCost = 0;
+    let monthlyCost = 0;
+    let executionsPerWeek = 0;
+    let executionsPerMonth = 0;
+    
+    if (frequency === 'single') {
+        return {
+            weeklyCost: 0,
+            monthlyCost: 0,
+            executionsPerWeek: 0,
+            executionsPerMonth: 0,
+            showPeriodic: false
+        };
+    }
+    
+    const executions = parseInt(executionsPerPeriod) || 1;
+    
+    switch (frequency) {
+        case 'daily':
+            executionsPerWeek = executions * 7;
+            executionsPerMonth = executions * 30; // Aproximação de 30 dias por mês
+            break;
+        case 'weekly':
+            executionsPerWeek = executions;
+            executionsPerMonth = executions * 4; // Aproximação de 4 semanas por mês
+            break;
+        case 'monthly':
+            executionsPerWeek = executions / 4.33; // Média de semanas por mês (52 semanas / 12 meses)
+            executionsPerMonth = executions;
+            break;
+        case 'custom':
+            // Para custom, o usuário informa execuções por período
+            // Assumimos que o período é semanal se não especificado
+            executionsPerWeek = executions;
+            executionsPerMonth = executions * 4;
+            break;
+    }
+    
+    weeklyCost = singleExecutionCost * executionsPerWeek;
+    monthlyCost = singleExecutionCost * executionsPerMonth;
+    
+    return {
+        weeklyCost: weeklyCost,
+        monthlyCost: monthlyCost,
+        executionsPerWeek: executionsPerWeek,
+        executionsPerMonth: executionsPerMonth,
+        showPeriodic: true
+    };
+}
+
 // Função principal de cálculo
 function calculateTotalCost(formData) {
     const executionTime = parseFloat(formData.executionTime) || 0;
@@ -191,6 +243,8 @@ function calculateTotalCost(formData) {
     const dataCatalogObjects = parseFloat(formData.dataCatalogObjects) || 0;
     const crawlerExecutionTime = parseFloat(formData.crawlerExecutionTime) || 0;
     const hasFreeTier = formData.hasFreeTier === 'true' || formData.hasFreeTier === true;
+    const executionFrequency = formData.executionFrequency || 'single';
+    const executionsPerPeriod = parseInt(formData.executionsPerPeriod) || 1;
     
     // Calcular custos (passando a região)
     const jobCost = calculateJobCost(executionTime, workerType, numberOfWorkers, executionType, awsRegion);
@@ -210,8 +264,11 @@ function calculateTotalCost(formData) {
         freeTierNote = 'Nota: AWS Glue não possui free tier específico. Contas novas podem ter créditos promocionais da AWS que reduzem custos.';
     }
     
-    // Calcular total
+    // Calcular total por execução
     const totalCost = Math.max(0, jobCost.cost + crawlerCost.cost + catalogCost.cost - freeTierSavings);
+    
+    // Calcular custos periódicos
+    const periodicCosts = calculatePeriodicCosts(totalCost, executionFrequency, executionsPerPeriod);
     
     return {
         job: jobCost,
@@ -221,7 +278,14 @@ function calculateTotalCost(formData) {
         region: awsRegion,
         hasFreeTier: hasFreeTier,
         freeTierSavings: freeTierSavings,
-        freeTierNote: freeTierNote
+        freeTierNote: freeTierNote,
+        frequency: executionFrequency,
+        executionsPerPeriod: executionsPerPeriod,
+        weekly: periodicCosts.weeklyCost,
+        monthly: periodicCosts.monthlyCost,
+        executionsPerWeek: periodicCosts.executionsPerWeek,
+        executionsPerMonth: periodicCosts.executionsPerMonth,
+        showPeriodic: periodicCosts.showPeriodic
     };
 }
 
@@ -280,6 +344,44 @@ function displayResults(results) {
     // Total Cost
     document.getElementById('totalCost').textContent = formatCurrencySimple(results.total);
     
+    // Weekly and Monthly Costs
+    if (results.showPeriodic && results.frequency !== 'single') {
+        document.getElementById('weeklyCard').style.display = 'block';
+        document.getElementById('monthlyCard').style.display = 'block';
+        
+        // Calcular custos periódicos (sem incluir Data Catalog que é mensal)
+        const jobCrawlerCostPerExecution = results.job.cost + results.crawler.cost;
+        const weeklyJobCrawler = jobCrawlerCostPerExecution * results.executionsPerWeek;
+        const monthlyJobCrawler = jobCrawlerCostPerExecution * results.executionsPerMonth;
+        
+        // Data Catalog é cobrado mensalmente, então adicionar apenas no custo mensal
+        const weeklyCostTotal = weeklyJobCrawler;
+        const monthlyCostTotal = monthlyJobCrawler + results.catalog.cost;
+        
+        document.getElementById('weeklyCost').textContent = formatCurrencySimple(weeklyCostTotal);
+        document.getElementById('monthlyCost').textContent = formatCurrencySimple(monthlyCostTotal);
+        
+        const weeklyDetails = `
+            <div>Execuções por semana: <strong>${results.executionsPerWeek.toFixed(1)}</strong></div>
+            <div>Custo por execução (Job + Crawler): <strong>${formatCurrencySimple(jobCrawlerCostPerExecution)}</strong></div>
+            ${results.catalog.cost > 0 ? '<div style="margin-top: 5px; color: var(--text-light); font-size: 0.85rem;">* Data Catalog não incluído (cobrança mensal)</div>' : ''}
+        `;
+        document.getElementById('weeklyDetails').innerHTML = weeklyDetails;
+        
+        const monthlyDetails = `
+            <div>Execuções por mês: <strong>${results.executionsPerMonth.toFixed(1)}</strong></div>
+            <div>Custo por execução (Job + Crawler): <strong>${formatCurrencySimple(jobCrawlerCostPerExecution)}</strong></div>
+            ${results.catalog.cost > 0 ? `<div>Data Catalog: <strong>${formatCurrencySimple(results.catalog.cost)}</strong> (cobrança mensal)</div>` : ''}
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                <strong>Estimativa anual:</strong> ${formatCurrencySimple(monthlyCostTotal * 12)}
+            </div>
+        `;
+        document.getElementById('monthlyDetails').innerHTML = monthlyDetails;
+    } else {
+        document.getElementById('weeklyCard').style.display = 'none';
+        document.getElementById('monthlyCard').style.display = 'none';
+    }
+    
     // Free Tier Note
     if (results.hasFreeTier && results.freeTierNote) {
         const freeTierNoteDiv = document.createElement('div');
@@ -318,7 +420,9 @@ document.getElementById('costCalculator').addEventListener('submit', function(e)
         awsRegion: document.getElementById('awsRegion').value,
         dataCatalogObjects: document.getElementById('dataCatalogObjects').value,
         crawlerExecutionTime: document.getElementById('crawlerExecutionTime').value,
-        hasFreeTier: document.getElementById('hasFreeTier').checked
+        hasFreeTier: document.getElementById('hasFreeTier').checked,
+        executionFrequency: document.getElementById('executionFrequency').value,
+        executionsPerPeriod: document.getElementById('executionsPerPeriod').value || 1
     };
     
     const results = calculateTotalCost(formData);
@@ -341,4 +445,55 @@ document.getElementById('numberOfWorkers').addEventListener('input', function() 
         this.setCustomValidity('');
     }
 });
+
+// Lógica para mostrar/ocultar campo de execuções por período
+const executionFrequencySelect = document.getElementById('executionFrequency');
+const executionsPerPeriodGroup = document.getElementById('executionsPerPeriodGroup');
+const executionsPerPeriodInput = document.getElementById('executionsPerPeriod');
+const periodLabel = document.getElementById('periodLabel');
+
+function updateExecutionFrequencyUI() {
+    const frequency = executionFrequencySelect.value;
+    
+    if (frequency === 'single') {
+        executionsPerPeriodGroup.style.display = 'none';
+    } else {
+        executionsPerPeriodGroup.style.display = 'block';
+        
+        // Atualizar label baseado na frequência
+        let labelText = '';
+        switch (frequency) {
+            case 'daily':
+                labelText = 'vezes por dia';
+                break;
+            case 'weekly':
+                labelText = 'vezes por semana';
+                break;
+            case 'monthly':
+                labelText = 'vezes por mês';
+                break;
+            case 'custom':
+                labelText = 'execuções no período';
+                break;
+        }
+        periodLabel.textContent = labelText;
+        
+        // Definir valor padrão baseado na frequência
+        if (executionsPerPeriodInput.value === '1' || executionsPerPeriodInput.value === '') {
+            if (frequency === 'daily') {
+                executionsPerPeriodInput.value = '1';
+            } else if (frequency === 'weekly') {
+                executionsPerPeriodInput.value = '1';
+            } else if (frequency === 'monthly') {
+                executionsPerPeriodInput.value = '1';
+            }
+        }
+    }
+}
+
+// Event listener para mudança de frequência
+executionFrequencySelect.addEventListener('change', updateExecutionFrequencyUI);
+
+// Inicializar UI
+updateExecutionFrequencyUI();
 
