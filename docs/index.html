@@ -80,11 +80,11 @@
                         <div class="form-group">
                             <label for="executionType">
                                 Tipo de Execução
-                                <span class="tooltip" data-tooltip="Standard: execução normal. FLEX: utiliza capacidade ociosa com desconto, mas pode ter maior latência">ℹ️</span>
+                                <span class="tooltip" data-tooltip="Standard: execução normal ($0.44 por DPU-hora na maioria das regiões). FLEX: utiliza capacidade ociosa com preço reduzido ($0.29 por DPU-hora), mas pode ter maior latência de inicialização">ℹ️</span>
                             </label>
                             <select id="executionType" name="executionType" required>
                                 <option value="standard" selected>Standard</option>
-                                <option value="flex">FLEX (até 50% de desconto)</option>
+                                <option value="flex">FLEX ($0.29 por DPU-hora)</option>
                             </select>
                         </div>
 
@@ -233,7 +233,7 @@
                             <li>Faturamento mínimo: <strong>1 minuto</strong> por job</li>
                             <li>Faturamento por <strong>segundo</strong> após o primeiro minuto</li>
                             <li>Preços variam por região (ex: sa-east-1 = $0.60/DPU-hora, us-east-1 = $0.44/DPU-hora)</li>
-                            <li>FLEX pode ter maior latência de inicialização</li>
+                            <li>FLEX: $0.29 por DPU-hora (vs $0.44 Standard) - pode ter maior latência de inicialização</li>
                             <li><strong>Fonte:</strong> <a href="https://aws.amazon.com/glue/pricing/" target="_blank">AWS Glue Pricing</a> (atualizado: Janeiro 2025)</li>
                             <li>Valores são estimativas baseadas em preços públicos da AWS</li>
                         </ul>

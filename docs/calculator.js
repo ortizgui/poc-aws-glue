@@ -25,10 +25,12 @@ const PRICING = {
         'G.8X': 8        // 8 DPUs - Máxima performance
     },
     
-    // Desconto para FLEX
-    // FLEX oferece desconto significativo usando capacidade ociosa
-    // Desconto pode variar, usando 40% como média conservadora
-    flexDiscount: 0.40,
+    // Preço FLEX por DPU-Hora
+    // Fonte: AWS Glue pricing - FLEX utiliza capacidade ociosa com preço reduzido
+    // Exemplo oficial: 6 DPUs * 1/3 hour * $0.29 = $0.58
+    // Preço FLEX: $0.29 por DPU-hora (vs $0.44 para Standard)
+    // Isso representa aproximadamente 34% de desconto
+    flexDpuHourlyRate: 0.29,
     
     // Mínimo de cobrança: 1 minuto para jobs ETL
     // Fonte: AWS Glue pricing - billed per second with 1-minute minimum
@@ -87,8 +89,12 @@ function calculateJobCost(executionTime, workerType, numberOfWorkers, executionT
     const dpuPerWorker = PRICING.workerTypes[workerType];
     const totalDPUs = dpuPerWorker * numberOfWorkers;
     
-    // Obter preço por DPU-Hora baseado na região
-    const dpuHourlyRate = getDpuHourlyRate(awsRegion);
+    // Obter preço por DPU-Hora baseado na região e tipo de execução
+    // FLEX tem preço fixo de $0.29 por DPU-hora (independente da região)
+    // Standard usa preço por região
+    const dpuHourlyRate = executionType === 'flex' 
+        ? PRICING.flexDpuHourlyRate 
+        : getDpuHourlyRate(awsRegion);
     
     // Converter minutos para horas
     const executionHours = executionTime / 60;
@@ -98,12 +104,7 @@ function calculateJobCost(executionTime, workerType, numberOfWorkers, executionT
     const billedHours = billedMinutes / 60;
     
     // Calcular custo base
-    let cost = totalDPUs * billedHours * dpuHourlyRate;
-    
-    // Aplicar desconto FLEX se aplicável
-    if (executionType === 'flex') {
-        cost = cost * (1 - PRICING.flexDiscount);
-    }
+    const cost = totalDPUs * billedHours * dpuHourlyRate;
     
     return {
         cost: cost,
@@ -128,20 +129,19 @@ function calculateCrawlerCost(executionTime, workerType, numberOfWorkers, execut
     const dpuPerWorker = PRICING.workerTypes[workerType];
     const totalDPUs = dpuPerWorker * numberOfWorkers;
     
-    // Obter preço por DPU-Hora baseado na região
-    const dpuHourlyRate = getDpuHourlyRate(awsRegion);
+    // Obter preço por DPU-Hora baseado na região e tipo de execução
+    // FLEX tem preço fixo de $0.29 por DPU-hora (independente da região)
+    // Standard usa preço por região
+    const dpuHourlyRate = executionType === 'flex' 
+        ? PRICING.flexDpuHourlyRate 
+        : getDpuHourlyRate(awsRegion);
     
     // Crawler tem mínimo de 10 minutos
     const billedMinutes = Math.max(executionTime, PRICING.crawlerMinBillingMinutes);
     const billedHours = billedMinutes / 60;
     
     // Calcular custo base
-    let cost = totalDPUs * billedHours * dpuHourlyRate;
-    
-    // Aplicar desconto FLEX se aplicável
-    if (executionType === 'flex') {
-        cost = cost * (1 - PRICING.flexDiscount);
-    }
+    const cost = totalDPUs * billedHours * dpuHourlyRate;
     
     return {
         cost: cost,
@@ -297,13 +297,18 @@ function displayResults(results) {
     // Job Cost
     document.getElementById('jobCost').textContent = formatCurrencySimple(results.job.cost);
     const regionName = document.getElementById('awsRegion').selectedOptions[0].text;
+    const executionType = document.getElementById('executionType').value;
+    const standardPrice = getDpuHourlyRate(results.region);
+    const flexNote = executionType === 'flex' 
+        ? `<div>Preço FLEX: <strong>$${PRICING.flexDpuHourlyRate.toFixed(2)} por DPU-hora</strong> (vs $${standardPrice.toFixed(2)} Standard - economia de ${((1 - PRICING.flexDpuHourlyRate / standardPrice) * 100).toFixed(0)}%)</div>`
+        : '';
     const jobDetails = `
         <div>Região: <strong>${regionName}</strong></div>
         <div>Preço por DPU-Hora: <strong>$${results.job.dpuHourlyRate.toFixed(2)}</strong></div>
         <div>Total de DPUs: <strong>${results.job.totalDPUs}</strong> (${results.job.dpuPerWorker} DPU × ${document.getElementById('numberOfWorkers').value} workers)</div>
         <div>Tempo de execução: <strong>${parseFloat(document.getElementById('executionTime').value)} minutos</strong></div>
         <div>Tempo faturado: <strong>${results.job.billedMinutes} minutos</strong> (mínimo de 1 minuto)</div>
-        ${document.getElementById('executionType').value === 'flex' ? '<div>Desconto FLEX aplicado: <strong>40%</strong></div>' : ''}
+        ${flexNote}
     `;
     document.getElementById('jobDetails').innerHTML = jobDetails;
     

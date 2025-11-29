@@ -40,8 +40,11 @@ A calculadora agora suporta preços diferentes por região:
 - Objetos adicionais: $1.00 por 100.000 objetos/mês
 
 ✅ **FLEX:**
-- Desconto médio: 40% (pode variar)
+- Preço fixo: **$0.29 por DPU-hora** (independente da região)
+- Standard: $0.44 por DPU-hora (maioria das regiões)
+- Economia: aproximadamente 34% em relação ao Standard
 - Utiliza capacidade ociosa da AWS
+- Pode ter maior latência de inicialização
 
 ## 📝 Notas Importantes
 
@@ -49,7 +52,7 @@ A calculadora agora suporta preços diferentes por região:
 
 2. **Região sa-east-1**: Tem preço mais alto ($0.60 vs $0.44) devido aos custos de infraestrutura na região.
 
-3. **FLEX**: O desconto pode variar dependendo da disponibilidade de capacidade ociosa. Usamos 40% como média conservadora.
+3. **FLEX**: Preço fixo de $0.29 por DPU-hora conforme documentação oficial da AWS. Fonte: [AWS Glue Pricing](https://aws.amazon.com/glue/pricing/) - exemplo: "6 DPUs * 1/3 hour * $0.29 = $0.58"
 
 4. **Última atualização**: Janeiro 2025
 

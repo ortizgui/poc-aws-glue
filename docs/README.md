@@ -42,8 +42,9 @@ Para personalizar a calculadora:
 
 ### Job ETL
 ```
-Custo = (DPUs por Worker × Número de Workers × Tempo Faturado em Horas × $0.44)
-Se FLEX: Aplicar desconto de 40%
+Custo = (DPUs por Worker × Número de Workers × Tempo Faturado em Horas × Preço por DPU-Hora)
+- Standard: $0.44 por DPU-hora (varia por região)
+- FLEX: $0.29 por DPU-hora (fixo, independente da região)
 Tempo Mínimo Faturado: 1 minuto
 ```
 
