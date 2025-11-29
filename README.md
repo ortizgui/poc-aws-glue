@@ -16,9 +16,7 @@ Este repositório inclui uma **calculadora interativa de custos** para estimar o
 
 ### 🌐 Acessar a Calculadora
 
-A calculadora está disponível em: **[GitHub Pages - Calculadora de Custos](https://yourusername.github.io/poc-glue-tests/)**
-
-*(Substitua `yourusername` pelo seu nome de usuário do GitHub)*
+A calculadora está disponível em: **[GitHub Pages - Calculadora de Custos](https://ortizgui.github.io/poc-glue-tests/)**
 
 ### ✨ Funcionalidades da Calculadora
 
@@ -52,7 +50,7 @@ Para disponibilizar a calculadora no GitHub Pages:
    - Clique em `Save`
 
 2. **Acessar a calculadora**:
-   - A URL será: `https://yourusername.github.io/poc-glue-tests/`
+   - A URL será: `https://ortizgui.github.io/poc-glue-tests/`
    - Pode levar alguns minutos para ficar disponível após a primeira configuração
 
 ### 📁 Estrutura da Calculadora
