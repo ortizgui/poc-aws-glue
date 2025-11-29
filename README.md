@@ -10,6 +10,61 @@ O projeto cria um job AWS Glue que:
 - Salva o resultado em um novo arquivo CSV no S3
 - Suporte para testes locais usando pandas
 
+## 💰 Calculadora de Custos AWS Glue
+
+Este repositório inclui uma **calculadora interativa de custos** para estimar o valor de execução de jobs AWS Glue, disponível via GitHub Pages.
+
+### 🌐 Acessar a Calculadora
+
+A calculadora está disponível em: **[GitHub Pages - Calculadora de Custos](https://yourusername.github.io/poc-glue-tests/)**
+
+*(Substitua `yourusername` pelo seu nome de usuário do GitHub)*
+
+### ✨ Funcionalidades da Calculadora
+
+A calculadora permite estimar custos considerando:
+
+- ⏱️ **Tempo de execução** do job (em minutos)
+- 🖥️ **Tipo de Worker** (G.025X, G.1X, G.2X, G.4X, G.8X)
+- 👥 **Número de Workers**
+- 🔄 **Tipo de Execução** (Standard ou FLEX com desconto)
+- 🌍 **Região AWS**
+- 📊 **Custos adicionais**:
+  - Data Catalog (objetos armazenados)
+  - Crawlers (tempo de execução)
+
+### 📊 Como Funciona
+
+A calculadora utiliza os preços oficiais da AWS:
+- **$0.44 por DPU-Hora** (faturado por segundo, mínimo de 1 minuto)
+- **Desconto FLEX**: até 40% de economia (média)
+- **Data Catalog**: Primeiro 1 milhão de objetos gratuito, depois $1.00 por 100.000 objetos/mês
+- **Crawlers**: Mesmo preço que ETL jobs, mínimo de 10 minutos
+
+### 🚀 Configurar GitHub Pages
+
+Para disponibilizar a calculadora no GitHub Pages:
+
+1. **Ativar GitHub Pages no repositório**:
+   - Vá em `Settings` → `Pages`
+   - Em `Source`, selecione `Deploy from a branch`
+   - Escolha a branch `main` e a pasta `/docs`
+   - Clique em `Save`
+
+2. **Acessar a calculadora**:
+   - A URL será: `https://yourusername.github.io/poc-glue-tests/`
+   - Pode levar alguns minutos para ficar disponível após a primeira configuração
+
+### 📁 Estrutura da Calculadora
+
+```
+docs/
+├── index.html      # Interface da calculadora
+├── styles.css      # Estilos e design responsivo
+├── calculator.js   # Lógica de cálculo
+└── .nojekyll       # Configuração para GitHub Pages
+```
+
 ## 🏗️ Arquitetura
 
 ```
@@ -26,6 +81,11 @@ O projeto cria um job AWS Glue que:
 
 ```
 poc-glue-tests/
+├── docs/                # GitHub Pages - Calculadora de Custos
+│   ├── index.html      # Interface da calculadora
+│   ├── styles.css      # Estilos e design responsivo
+│   ├── calculator.js   # Lógica de cálculo
+│   └── .nojekyll       # Configuração para GitHub Pages
 ├── src/
 │   └── glue_job.py       # Script principal do Glue (funciona local + AWS)
 ├── tests/

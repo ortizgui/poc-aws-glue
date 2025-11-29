@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Custos AWS Glue</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Calculadora de Custos AWS Glue</h1>
+            <p class="subtitle">Estime o custo de execução do seu Glue Job</p>
+        </header>
+
+        <main>
+            <div class="calculator-card">
+                <form id="costCalculator">
+                    <div class="form-section">
+                        <h2>⚙️ Configurações do Job</h2>
+                        
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input 
+                                    type="checkbox" 
+                                    id="hasFreeTier" 
+                                    name="hasFreeTier" 
+                                    checked
+                                >
+                                <span>Conta possui Free Tier (12 meses gratuitos)</span>
+                                <span class="tooltip" data-tooltip="O AWS Free Tier oferece recursos gratuitos por 12 meses para novos clientes. Marque esta opção se sua conta ainda está no período de free tier.">ℹ️</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="executionTime">
+                                Tempo de Execução (minutos)
+                                <span class="tooltip" data-tooltip="Tempo total de execução do job em minutos">ℹ️</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="executionTime" 
+                                name="executionTime" 
+                                min="0.1" 
+                                step="0.1" 
+                                value="5" 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="workerType">
+                                Tipo de Worker
+                                <span class="tooltip" data-tooltip="Tipo de instância do worker. Cada tipo tem uma quantidade diferente de DPUs">ℹ️</span>
+                            </label>
+                            <select id="workerType" name="workerType" required>
+                                <option value="G.025X">G.025X (0.25 DPU) - Menor custo</option>
+                                <option value="G.1X" selected>G.1X (1 DPU) - Recomendado</option>
+                                <option value="G.2X">G.2X (2 DPUs) - Maior performance</option>
+                                <option value="G.4X">G.4X (4 DPUs)</option>
+                                <option value="G.8X">G.8X (8 DPUs) - Máxima performance</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numberOfWorkers">
+                                Número de Workers
+                                <span class="tooltip" data-tooltip="Quantidade de workers que serão utilizados na execução">ℹ️</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="numberOfWorkers" 
+                                name="numberOfWorkers" 
+                                min="1" 
+                                value="2" 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="executionType">
+                                Tipo de Execução
+                                <span class="tooltip" data-tooltip="Standard: execução normal. FLEX: utiliza capacidade ociosa com desconto, mas pode ter maior latência">ℹ️</span>
+                            </label>
+                            <select id="executionType" name="executionType" required>
+                                <option value="standard" selected>Standard</option>
+                                <option value="flex">FLEX (até 50% de desconto)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="awsRegion">
+                                Região AWS
+                                <span class="tooltip" data-tooltip="A região pode afetar ligeiramente os preços">ℹ️</span>
+                            </label>
+                            <select id="awsRegion" name="awsRegion" required>
+                                <option value="us-east-1">us-east-1 (N. Virginia)</option>
+                                <option value="us-east-2">us-east-2 (Ohio)</option>
+                                <option value="us-west-1">us-west-1 (N. California)</option>
+                                <option value="us-west-2">us-west-2 (Oregon)</option>
+                                <option value="sa-east-1" selected>sa-east-1 (São Paulo)</option>
+                                <option value="eu-west-1">eu-west-1 (Ireland)</option>
+                                <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
+                                <option value="ap-southeast-1">ap-southeast-1 (Singapore)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>📊 Custos Adicionais (Opcional)</h2>
+                        
+                        <div class="form-group">
+                            <label for="dataCatalogObjects">
+                                Objetos no Data Catalog (milhões)
+                                <span class="tooltip" data-tooltip="Primeiro 1 milhão é gratuito, depois $1.00 por 100.000 objetos/mês">ℹ️</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="dataCatalogObjects" 
+                                name="dataCatalogObjects" 
+                                min="0" 
+                                step="0.1" 
+                                value="0"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="crawlerExecutionTime">
+                                Tempo de Execução do Crawler (minutos)
+                                <span class="tooltip" data-tooltip="Se você usa crawlers, adicione o tempo de execução aqui">ℹ️</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="crawlerExecutionTime" 
+                                name="crawlerExecutionTime" 
+                                min="0" 
+                                step="0.1" 
+                                value="0"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="calculate-btn">Calcular Custo</button>
+                </form>
+
+                <div id="results" class="results hidden">
+                    <h2>💵 Resultado da Estimativa</h2>
+                    
+                    <div class="result-card">
+                        <div class="result-item">
+                            <span class="result-label">Custo do Job (ETL):</span>
+                            <span class="result-value" id="jobCost">$0.00</span>
+                        </div>
+                        <div class="result-details" id="jobDetails"></div>
+                    </div>
+
+                    <div class="result-card" id="crawlerCard" style="display: none;">
+                        <div class="result-item">
+                            <span class="result-label">Custo do Crawler:</span>
+                            <span class="result-value" id="crawlerCost">$0.00</span>
+                        </div>
+                        <div class="result-details" id="crawlerDetails"></div>
+                    </div>
+
+                    <div class="result-card" id="catalogCard" style="display: none;">
+                        <div class="result-item">
+                            <span class="result-label">Custo do Data Catalog:</span>
+                            <span class="result-value" id="catalogCost">$0.00</span>
+                        </div>
+                        <div class="result-details" id="catalogDetails"></div>
+                    </div>
+
+                    <div class="result-card total-card">
+                        <div class="result-item">
+                            <span class="result-label total-label">Custo Total Estimado:</span>
+                            <span class="result-value total-value" id="totalCost">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card info-card">
+                        <h3>ℹ️ Informações Importantes</h3>
+                        <ul>
+                            <li>Faturamento mínimo: <strong>1 minuto</strong> por job</li>
+                            <li>Faturamento por <strong>segundo</strong> após o primeiro minuto</li>
+                            <li>Preços variam por região (ex: sa-east-1 = $0.60/DPU-hora, us-east-1 = $0.44/DPU-hora)</li>
+                            <li>FLEX pode ter maior latência de inicialização</li>
+                            <li><strong>Fonte:</strong> <a href="https://aws.amazon.com/glue/pricing/" target="_blank">AWS Glue Pricing</a> (atualizado: Janeiro 2025)</li>
+                            <li>Valores são estimativas baseadas em preços públicos da AWS</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>📚 <a href="https://github.com" target="_blank">Ver repositório no GitHub</a></p>
+            <p>🔗 <a href="https://aws.amazon.com/glue/pricing/" target="_blank">Preços oficiais da AWS Glue</a></p>
+            <p class="disclaimer">⚠️ Valores são estimativas baseadas em preços públicos da AWS. Consulte a documentação oficial para valores atualizados.</p>
+        </footer>
+    </div>
+
+    <script src="calculator.js"></script>
+</body>
+</html>
+
